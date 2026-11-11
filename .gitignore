@@ -1,0 +1,11 @@
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+.env
+.env.*
+*.local
+# קובצי גיבוי / נתונים אישיים — לא להעלות למאגר
+tavach-backup-*.json
+tavach-export-*.csv
+backup*.json
