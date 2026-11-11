@@ -16,6 +16,7 @@
 .install-info{min-width:0}.install-info strong{font-size:14px;font-weight:700}.install-info p{font-size:12px;color:var(--secondary);margin:3px 0 0;line-height:1.6}
 .install-button{border:1px solid #d9d2f0;background:var(--accent-soft);color:#514591;border-radius:12px;font-weight:700;font-size:13px;padding:11px 16px;white-space:nowrap;min-height:44px}
 .install-button:hover{background:#e8e3f9}
+.install-copy{margin-top:9px;background:#fff;color:var(--accent)}.install-copy[hidden]{display:none}
 .install-help{font-size:13px;line-height:1.75;color:var(--secondary);margin:9px 0 0}
 @media(max-width:650px){.install-panel{flex-direction:column;align-items:stretch}.install-button{width:100%}}
 @media(max-width:650px){.app{padding:0 14px 55px}.header{padding:25px 2px 27px}.brand-title{font-size:21px}.privacy{font-size:11px}.mood-grid{grid-template-columns:1fr;gap:11px}.mood-card{padding:22px 20px}.choice{min-height:54px}.sleep-card{padding:20px;align-items:flex-start;flex-wrap:wrap}.sleep-input-group{margin-right:auto}.datebar{gap:6px}.date-caption{min-width:100%;margin-bottom:4px}.date-input{width:132px}.actions{align-items:center}.save{flex:1}.stat{padding:14px 11px}.stat-value{font-size:20px}.stat-name{font-size:11px}.history-line{grid-template-columns:1.2fr 1fr 1fr;gap:5px;padding:13px}.history-line .history-pill:last-child{display:none}.chart-card{padding:18px 12px 8px}.chart-key{gap:7px}.sections{margin-top:36px}}
@@ -27,7 +28,7 @@
   <header class="header"><div class="brand"><div class="brand-logo" aria-hidden="true"><svg width="25" height="28" viewBox="0 0 25 28" fill="none"><path d="M12.5 5V23" stroke="#9D92C7" stroke-width="2.5" stroke-linecap="round"/><circle cx="12.5" cy="5" r="4.2" fill="#8474BE"/><circle cx="12.5" cy="23" r="4.2" fill="#4D87AA"/></svg></div><div><div class="brand-title">טווח</div><div class="brand-sub">יומן מצב רוח ושינה</div></div></div><span class="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> פרטי, במכשיר שלך</span></header>
   <section class="intro"><h1>איך הרגשת היום?</h1><p>לא צריך לסכם יום שלם בתחושה אחת. אפשר לתעד גם את השיא וגם את השפל.</p></section>
   <section class="install-panel" id="installPanel" aria-label="התקנת טווח למסך הבית">
-    <div class="install-info"><strong>טווח גם במסך הבית שלך</strong><p>בלי חנות אפליקציות, בלי חשבון ובלי תשלום.</p><p class="install-help" id="installHelp" hidden>פתחי את הכתובת ב־Google Chrome (ולא בדפדפן הפנימי של ChatGPT). בתפריט שלוש הנקודות ⋮ בחרי ״התקנה ויצירת קיצור דרך״ או ״הוספה למסך הבית״, ואז ״התקנה״.</p></div>
+    <div class="install-info"><strong>טווח גם במסך הבית שלך</strong><p>בלי חנות אפליקציות, בלי חשבון ובלי תשלום.</p><p class="install-help" id="installHelp" hidden>התקנה אינה אפשרית מתוך הדפדפן הפנימי של ChatGPT. העתיקי את כתובת האתר ופתחי אותה ב־Chrome עצמו. בתפריט ⋮ בחרי ״התקנה ויצירת קיצור דרך״, ואז ״התקנה״ או ״יצירת קיצור דרך״. אם האפשרות לא מופיעה, פתחי את האתר ב־Samsung Internet, הקישי על ☰ ואז על ״הוסף דף אל״ ← ״מסך הבית״.</p><button class="install-button install-copy" id="copyInstallUrl" type="button" hidden>העתקת כתובת האתר</button></div>
     <button class="install-button" id="installBtn" type="button" aria-controls="installHelp">התקיני בטלפון</button>
   </section>
   <div class="datebar" aria-label="בחירת יום"><strong class="date-caption" id="dateLabel"></strong><button id="prevDay" class="small-button" aria-label="היום הקודם">›</button><button id="nextDay" class="small-button" aria-label="היום הבא">‹</button><input type="date" id="dateInput" class="date-input" aria-label="בחרי תאריך"><button class="today-button" id="todayBtn">היום</button></div>
@@ -83,7 +84,11 @@ function exportCsv(){let s='\ufeffתאריך,שיא מצב רוח,שפל מצב 
 async function importJson(file){if(!file)return;try{if(file.size>2e6)throw Error('קובץ גדול מדי');const parsed=JSON.parse(await file.text());if(parsed.app!=='tavach'||parsed.version!==1||typeof parsed.entries!=='object'||!parsed.entries||Array.isArray(parsed.entries))throw Error('פורמט קובץ לא מתאים');const next={};for(const [k,e] of Object.entries(parsed.entries)){if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||!validateEntry(e))throw Error('נמצאו נתונים לא תקינים');next[k]=e}if(!confirm(`נמצאו ${Object.keys(next).length} ימים בגיבוי. לייבא אותם? אם יש התנגשות, נתוני הגיבוי יחליפו את הרשומה הקיימת לאותו יום.`))return;data={...data,...next};if(persist()){dirty=false;selectDate(activeDate);renderReports();showToast('הגיבוי יובא בהצלחה')}}catch(e){alert('ייבוא הגיבוי נכשל: '+e.message)}finally{$('importFile').value=''}}
 let deferredInstallPrompt=null;
 function setupInstall(){
-  const panel=$('installPanel'),btn=$('installBtn'),help=$('installHelp');
+  const panel=$('installPanel'),btn=$('installBtn'),help=$('installHelp'),copy=$('copyInstallUrl');
+  copy.addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(location.href);copy.textContent='הקישור הועתק';showToast('הקישור הועתק. פתחי את Chrome והדביקי אותו בשורת הכתובת')}
+    catch(e){window.prompt('העתיקי את הקישור והדביקי ב־Chrome:',location.href)}
+  });
   if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches){panel.hidden=true;return}
   window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstallPrompt=event;btn.textContent='התקיני את טווח'});
   window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;panel.hidden=true});
@@ -94,6 +99,7 @@ function setupInstall(){
       try{await prompt.userChoice}catch(e){}
     }else{
       help.hidden=false;
+      copy.hidden=false;
       btn.textContent='הוראות התקנה';
     }
   });
